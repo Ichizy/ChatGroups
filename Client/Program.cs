@@ -8,22 +8,29 @@ namespace Client
         private static void Main(string[] args)
         {
             var connection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:55933/chat")
+               .WithUrl("http://chatgroups.azurewebsites.net/chat")
+                //.WithUrl("http://localhost:55933/chat")
                 .Build();
 
-            connection.On("Receive", (string message, string connectionId) =>
+            //TODO: who sent this message?
+            connection.On("Receive", (string message) =>
             {
-                Console.WriteLine($"Message received from {connectionId}: {message}");
+                Console.WriteLine($"Message received: {message}");
             });
             connection.On("Notify", (string message) =>
             {
                 Console.WriteLine(message);
             });
-            connection.StartAsync();
-            connection.InvokeAsync("Send", "Test text");
+            connection.StartAsync().Wait();
 
-            Console.Read();
-            connection.StopAsync();
+            while (Console.ReadKey().Key != ConsoleKey.Escape)
+            {
+                var text = Console.ReadLine();
+                connection.InvokeAsync("Send", text).Wait();
+                Console.Read();
+            }
+
+            connection.StopAsync().Wait();
         }
     }
 }

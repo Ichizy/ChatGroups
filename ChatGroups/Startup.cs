@@ -13,6 +13,7 @@ namespace ChatGroups
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddSignalR();
         }
 
@@ -24,6 +25,13 @@ namespace ChatGroups
                 app.UseDeveloperExceptionPage();
             }
 
+            // Make sure the CORS middleware is ahead of SignalR.
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
