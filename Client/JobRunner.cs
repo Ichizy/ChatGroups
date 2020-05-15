@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Client
 {
@@ -13,14 +12,8 @@ namespace Client
         {
             MenuItems = new List<MenuItem>
             {
-                //new MenuItem {Description = "View balance", Execute = ViewBalance}
+                new MenuItem { Description = "Create new group", Action = () => { Console.WriteLine("Hello!"); } }
             };
         }
-    }
-
-    public class MenuItem
-    {
-        public string Description { get; set; }
-        public Action Execute { get; set; }
     }
 }
