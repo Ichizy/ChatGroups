@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "awlG9XwVctAfyVl176HJ+9biLM7rSzc7ZPSvumbE8hokAXj/LoS6LJIfqesIc0C/9lTdtrFmYSpjegIbJU10EA==",
+  "dgSpecHash": "E+tTlXa8gwrSfNMjxgQrv8BCzQeSL5mBasEmwdcwUjQQKP1+8P9yoycQErKzxBnErhcXVuHApY2+HimK3b1M9g==",
   "success": true,
   "projectFilePath": "C:\\Users\\Ichizy\\source\\NextGamesRepository\\ChatGroups\\ChatGroups.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\Ichizy\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512"
+  ],
   "logs": []
 }

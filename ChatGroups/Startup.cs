@@ -1,3 +1,4 @@
+using ChatGroups.HubProcessors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,10 +37,18 @@ namespace ChatGroups
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<ChatHub>("/chat",
-                    options => {
+                //endpoints.MapHub<ChatHub>("/chat",
+                //    options =>
+                //    {
+                //        options.Transports = HttpTransportType.WebSockets;
+                //    });
+                endpoints.MapHub<GroupsHub>("/chat",
+                    options =>
+                    {
                         options.Transports = HttpTransportType.WebSockets;
                     });
+
+
                 endpoints.MapGet("/", async context =>
                 {
                     await context.Response.WriteAsync("Hello World!");
