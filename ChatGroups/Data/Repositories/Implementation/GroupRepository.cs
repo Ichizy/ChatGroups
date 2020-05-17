@@ -13,10 +13,17 @@ namespace ChatGroups.Data.Repositories
             _storage = storage;
         }
 
-        public async Task Add(Group group)
+        public async Task Create(Group group, Client creator)
         {
             await _storage.Groups.AddAsync(group);
             await _storage.SaveChangesAsync();
+
+            var clientGroup = new ClientGroup
+            {
+                Client = creator,
+                Group = group
+            };
+            await _storage.ClientGroups.AddAsync(clientGroup);
         }
 
         //TODO: delete by ID?

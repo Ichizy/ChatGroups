@@ -13,8 +13,7 @@ namespace ChatGroups.Data.Models
 
         public DateTime Time { get; set; }
 
-        [ForeignKey("FK_Messages_Clients")]
-        public long ClientId { get; set; }
+        public Client Client { get; set; }
 
         // public string PublicId { get; set; }
     }

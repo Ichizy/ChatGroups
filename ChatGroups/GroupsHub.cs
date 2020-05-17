@@ -1,5 +1,6 @@
 ﻿using ChatGroups.Models;
 using ChatGroups.Resources;
+using ChatGroups.Services;
 using ChatGroupsContracts;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -10,8 +11,14 @@ using System.Threading.Tasks;
 
 namespace ChatGroups.HubProcessors
 {
+    
     public class GroupsHub : Hub
     {
+        public GroupsHub(GroupsOperationsProcessor processor)
+        {
+            processor.Test();
+        }
+
         private static readonly IList<GroupDto> chatGroups = new List<GroupDto>();
 
         //TODO: retrieve from DI
@@ -90,11 +97,10 @@ namespace ChatGroups.HubProcessors
                 return;
             }
 
-            //TODO: upload here previous chat history;
-
             //TODO: update default collection
             existingGroup.ClientsConnected.Add(Context.ConnectionId);
-            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"You've successfully joined {groupName} group. Now you may start chating."));
+            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName)));
+            //TODO: upload here previous chat history;
 
             var context = Context.GetHttpContext();
             var exclutionList = new List<string> { Context.ConnectionId };

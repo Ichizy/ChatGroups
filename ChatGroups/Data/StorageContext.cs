@@ -11,5 +11,11 @@ namespace ChatGroups.Data
         public DbSet<Group> Groups { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<ClientGroup> ClientGroups { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+
+        }
     }
 }

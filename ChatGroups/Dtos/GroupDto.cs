@@ -12,6 +12,8 @@ namespace ChatGroups.Models
 
         public uint MaximumClientsAmount { get; set; }
 
+        public string CreatorConnectionId { get; set; }
+
         public IList<string> ClientsConnected { get; set; }
     }
 }

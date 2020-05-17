@@ -5,7 +5,7 @@ namespace ChatGroups.Data.Repositories
 {
     public interface IGroupRepository
     {
-        Task Add(Group group);
+        Task Create(Group group, Client creatorClient);
 
         Task Delete(Group group);
     }

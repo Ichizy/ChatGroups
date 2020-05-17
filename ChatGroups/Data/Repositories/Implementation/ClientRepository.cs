@@ -18,5 +18,10 @@ namespace ChatGroups.Data.Repositories
             await _storage.Clients.AddAsync(client);
             await _storage.SaveChangesAsync();
         }
+
+        public Task<Client> Get(string connectionId)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -6,5 +6,7 @@ namespace ChatGroups.Data.Repositories
     public interface IClientRepository
     {
         Task Add(Client client);
+
+        Task<Client> Get(string connectionId);
     }
 }
