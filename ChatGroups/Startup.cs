@@ -1,3 +1,4 @@
+using ChatGroups.Data;
 using ChatGroups.HubProcessors;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using ChatGroups.Data.Repositories;
 
 namespace ChatGroups
 {
@@ -22,6 +25,13 @@ namespace ChatGroups
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<StorageContext>(opt => opt.UseInMemoryDatabase("ChatGroups"));
+
+            //TODO: extract this to a separate module (if possible in default DI)
+            services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+
             services.AddCors();
             services.AddSignalR();
             //TODO: add proper implementation for appConfig

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace ChatGroups.Resources
 {
+    //TODO: consider extraction to resource files
     public class ErrorMessages
     {
         public static string GroupDoesNotExist(string groupName)

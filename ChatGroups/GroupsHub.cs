@@ -12,7 +12,7 @@ namespace ChatGroups.HubProcessors
 {
     public class GroupsHub : Hub
     {
-        private static readonly IList<Group> chatGroups = new List<Group>();
+        private static readonly IList<GroupDto> chatGroups = new List<GroupDto>();
 
         //TODO: retrieve from DI
         private readonly AppConfiguration _appConfiguration = new AppConfiguration();
@@ -50,7 +50,7 @@ namespace ChatGroups.HubProcessors
                 return;
             }
 
-            chatGroups.Add(new Group
+            chatGroups.Add(new GroupDto
             {
                 Name = groupName,
                 CurrentClientsAmount = 1,
