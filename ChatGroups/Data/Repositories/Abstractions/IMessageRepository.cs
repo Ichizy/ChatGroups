@@ -9,5 +9,7 @@ namespace ChatGroups.Data.Repositories
     public interface IMessageRepository
     {
         Task Add(Message message);
+
+        Task<IList<Message>> GetGroupHistory(string groupId);
     }
 }

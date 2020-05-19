@@ -1,5 +1,5 @@
 ﻿using ChatGroups.Data.Models;
-using System;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,8 +22,10 @@ namespace ChatGroups.Data.Repositories
             await _storage.SaveChangesAsync();
         }
 
-
-
-        //TODO: Here should be functionality to modify, mark as deleted message, etc.
+        public async Task<IList<Message>> GetGroupHistory(string groupId)
+        {
+            var result = _storage.Messages.Where(x => x.Group.PublicId == groupId);
+            return await result.ToListAsync();
+        }
     }
 }

@@ -14,5 +14,7 @@ namespace ChatGroups.DTOs
         public string GroupId { get; set; }
 
         public bool SentToGroup { get; set; }
+
+        public DateTime Time { get; set; }
     }
 }

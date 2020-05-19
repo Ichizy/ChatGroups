@@ -15,7 +15,7 @@ namespace ChatGroups.HubProcessors
     public class GroupsHub : Hub
     {
         private readonly IGroupsProcessor _processor;
-        private static readonly IList<GroupDto> chatGroups = new List<GroupDto>();
+        private static IList<GroupDto> chatGroups = new List<GroupDto>();
 
         //TODO: retrieve from DI
         private readonly AppConfiguration _appConfiguration = new AppConfiguration();
@@ -37,7 +37,8 @@ namespace ChatGroups.HubProcessors
                 Body = message.Body,
                 GroupId = message.GroupId,
                 SenderConnectionId = Context.ConnectionId,
-                SentToGroup = true
+                SentToGroup = true,
+                Time = DateTime.UtcNow //TODO: ensure time
             };
             await _processor.OnMessageSent(msgDto);
 
@@ -82,7 +83,16 @@ namespace ChatGroups.HubProcessors
             chatGroups.Add(groupDto);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"Group {groupName} successfully created."));
+            var message = CreateSystemMessage($"Group {groupName} successfully created.");
+            var groupMessage = new GroupMessage
+            {
+                GroupName = groupName,
+                GroupId = groupDto.PublicId
+                //TODO: construct from basic message?
+            };
+
+            await Clients.Caller.SendAsync(receiveMethodName, message);
+            await Clients.Caller.SendAsync(GroupMethodNames.OnGroupJoined, groupMessage);
         }
 
         /// <summary>
@@ -104,16 +114,18 @@ namespace ChatGroups.HubProcessors
                 return;
             }
 
-            if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) != null)
-            {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"You're already a member of {groupName} group."));
-                return;
-            }
+            //TODO: return, commented for testing now.
+            //if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) != null)
+            //{
+            //    await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"You're already a member of {groupName} group."));
+            //    return;
+            //}
+            var messageHistory = await _processor.OnGroupJoin(existingGroup.PublicId, Context.ConnectionId);
 
             //TODO: update default collection
             existingGroup.ClientsConnected.Add(Context.ConnectionId);
             await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName)));
-            //TODO: upload here previous chat history;
+            //TODO: return history here;
 
             var context = Context.GetHttpContext();
             var exclutionList = new List<string> { Context.ConnectionId };
@@ -179,20 +191,5 @@ namespace ChatGroups.HubProcessors
                 Time = DateTime.UtcNow
             };
         }
-
-        //public override async Task OnConnectedAsync()
-        //{
-        //    //TODO: connect to a specific group here
-        //    var context = Context.GetHttpContext();
-        //    await Clients.All.SendAsync("Notify", $"{context.Connection.RemoteIpAddress} entered the room.");
-        //    await base.OnConnectedAsync();
-        //}
-
-        //public override async Task OnDisconnectedAsync(Exception exception)
-        //{
-        //    var context = Context.GetHttpContext();
-        //    await Clients.All.SendAsync("Notify", $"{context.Connection.RemoteIpAddress} left the room.");
-        //    await base.OnDisconnectedAsync(exception);
-        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ChatGroupsContracts;
+using Client.Models;
 using EasyConsole;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -10,6 +11,7 @@ namespace Client
     {
         private static HubConnection connection;
         private static string userNickName;
+        private static GroupsProcessor _processor;
 
         public static void Main(string[] args)
         {
@@ -20,11 +22,11 @@ namespace Client
             connection.StartAsync().Wait(); //TODO: this should be extracted later
             connection.InvokeAsync("Connect", userNickName).Wait();
 
-            var processor = new GroupsProcessor(ref connection);
+            _processor = new GroupsProcessor(ref connection);
 
             var groupsMenu = new Menu()
-                .Add("Create new group", () => processor.CreateGroup().Wait())
-                .Add("Join existing group", () => processor.JoinGroup().Wait())
+                .Add("Create new group", () => _processor.CreateGroup().Wait())
+                .Add("Join existing group", () => _processor.JoinGroup().Wait())
                 .Add("Retrieve existing groups", () => connection.InvokeAsync("ListGroups").Wait())
                 .Add("Chatting in a group", () => SendMessageToGroup())
                 .Add("Exit", () => Environment.Exit(0));
@@ -34,8 +36,15 @@ namespace Client
             var selection = Console.ReadKey();
             while (selection.Key != ConsoleKey.Escape)
             {
-                groupsMenu.Display();
-                Console.ReadKey();
+                var key = Console.ReadKey();
+                if (key.Key == ConsoleKey.M)
+                {
+                    groupsMenu.Display();
+                }
+                else
+                {
+                    SendMessageToGroup();
+                }
             }
             connection.StopAsync().Wait();
         }
@@ -46,10 +55,10 @@ namespace Client
             var groupMessage = new GroupMessage
             {
                 Body = input,
-                GroupId = "",
-                //TODO: pass groupId here
-                GroupName = "",
-                //TODO: pass groupId here
+                GroupId = _processor._userGroups[0].GroupId,
+                //TODO: select proper group here
+                GroupName = _processor._userGroups[0].GroupName,
+                //TODO: select proper group here
                 SenderName = userNickName,
                 Time = DateTime.UtcNow
             };
@@ -65,11 +74,16 @@ namespace Client
 
             connection.On("Receive", (Message message) =>
             {
-                Console.WriteLine(message);
+                Output.WriteLine(ConsoleColor.Yellow, message.ToString());
             });
-            connection.On("Notify", (string message) =>
+            connection.On(GroupMethodNames.OnGroupJoined, (GroupMessage groupMessage) =>
             {
-                Console.WriteLine(message);
+                var userGroup = new UserGroup
+                {
+                    GroupId = groupMessage.GroupId,
+                    GroupName = groupMessage.GroupName
+                };
+                _processor.OnGroupJoined(userGroup).Wait();
             });
         }
     }

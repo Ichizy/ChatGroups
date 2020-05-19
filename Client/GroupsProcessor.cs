@@ -10,7 +10,8 @@ namespace Client
     public class GroupsProcessor
     {
         private readonly HubConnection _connection;
-        private List<UserGroup> _userGroups;
+
+        public List<UserGroup> _userGroups;
 
         public GroupsProcessor(ref HubConnection connection)
         {

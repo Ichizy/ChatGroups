@@ -18,7 +18,6 @@ namespace ChatGroups.Data.Repositories
         public async Task Create(Group group, Client creator)
         {
             await _storage.Groups.AddAsync(group);
-            await _storage.SaveChangesAsync();
 
             var clientGroup = new ClientGroup
             {
@@ -26,6 +25,21 @@ namespace ChatGroups.Data.Repositories
                 Group = group
             };
             await _storage.ClientGroups.AddAsync(clientGroup);
+            await _storage.SaveChangesAsync();
+
+        }
+
+        public async Task AddClientToGroup(string publicId, Client client)
+        {
+            var group = _storage.Groups.First(x => x.PublicId == publicId);
+
+            var clientGroup = new ClientGroup
+            {
+                Client = client,
+                Group = group
+            };
+            await _storage.ClientGroups.AddAsync(clientGroup);
+            await _storage.SaveChangesAsync();
         }
 
         public async Task<Group> Get(string publicId)

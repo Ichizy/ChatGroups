@@ -8,5 +8,7 @@ namespace ChatGroupsContracts
     {
         public const string CreateGroup = "CreateGroup";
         public const string JoinGroup = "JoinGroup";
+
+        public const string OnGroupJoined = "OnGroupJoined";
     }
 }

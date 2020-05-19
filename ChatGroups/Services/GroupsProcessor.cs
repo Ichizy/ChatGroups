@@ -4,6 +4,7 @@ using ChatGroups.DTOs;
 using ChatGroups.Models;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ChatGroups.Services
@@ -54,7 +55,6 @@ namespace ChatGroups.Services
         {
             try
             {
-
                 var client = await _clientRepo.Get(msgDto.SenderConnectionId);
                 var msg = new Message
                 {
@@ -74,22 +74,36 @@ namespace ChatGroups.Services
             }
         }
 
-        public async Task OnGroupJoin()
+        public async Task<IList<MessageDto>> OnGroupJoin(string groupId, string clientConnectionId)
         {
             try
             {
-                _messageRepo.
-                //var client = await _clientRepo.Get(connectionId);
-                //var msg = new Message(body, client);
-                //await _messageRepo.Add(msg);
+                var client = await _clientRepo.Get(clientConnectionId);
+                await _groupRepo.AddClientToGroup(groupId, client);
+
+                var historyModel = await _messageRepo.GetGroupHistory(groupId);
+                var history = new List<MessageDto>();
+
+                //TODO: automapper?
+                foreach (var item in historyModel)
+                {
+                    var historyItem = new MessageDto
+                    {
+                        GroupId = item.Group.PublicId,
+                        Body = item.Body,
+                        SenderConnectionId = item.Client.ConnectionId,
+                        SentToGroup = true,
+                        Time = item.Time
+                    };
+                    history.Add(historyItem);
+                }
+                return history;
             }
             catch (Exception ex)
             {
                 //TODO: process properly
                 throw ex;
             }
-            //TODO: return messages history here
-            //TODO: add person to group in DB
         }
     }
 }
