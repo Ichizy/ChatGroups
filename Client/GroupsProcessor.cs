@@ -1,6 +1,8 @@
 ﻿using ChatGroupsContracts;
+using Client.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Client
@@ -8,10 +10,12 @@ namespace Client
     public class GroupsProcessor
     {
         private readonly HubConnection _connection;
+        private List<UserGroup> _userGroups;
 
         public GroupsProcessor(ref HubConnection connection)
         {
             _connection = connection;
+            _userGroups = new List<UserGroup>();
         }
 
         public async Task CreateGroup()
@@ -29,7 +33,13 @@ namespace Client
             var groupName = Console.ReadLine();
 
             // await connection.StartAsync();
-            _connection.InvokeAsync(GroupMethodNames.JoinGroup, groupName).Wait();
+            await _connection.InvokeAsync(GroupMethodNames.JoinGroup, groupName);
+        }
+
+        public async Task OnGroupJoined(UserGroup group)
+        {
+            //TODO: add proper group here
+            _userGroups.Add(group);
         }
     }
 }

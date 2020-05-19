@@ -1,4 +1,6 @@
 ﻿using ChatGroups.Data.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ChatGroups.Data.Repositories
@@ -24,6 +26,11 @@ namespace ChatGroups.Data.Repositories
                 Group = group
             };
             await _storage.ClientGroups.AddAsync(clientGroup);
+        }
+
+        public async Task<Group> Get(string publicId)
+        {
+            return await _storage.Groups.FirstAsync(x => x.PublicId == publicId);
         }
 
         //TODO: delete by ID?

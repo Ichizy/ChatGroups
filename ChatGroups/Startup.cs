@@ -35,7 +35,7 @@ namespace ChatGroups
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
-            services.AddSingleton<GroupsOperationsProcessor>(); //TODO: change this after
+            services.AddScoped<IGroupsProcessor, GroupsProcessor>();
 
             services.AddCors();
             services.AddSignalR();

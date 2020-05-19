@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatGroups.Data.Models
 {
@@ -15,6 +14,9 @@ namespace ChatGroups.Data.Models
 
         public Client Client { get; set; }
 
-        // public string PublicId { get; set; }
+        /// <summary>
+        /// Message can belong to a group, however it might be also possible to send a message just to another user (so group would be empty).
+        /// </summary>
+        public Group? Group { get; set; }
     }
 }

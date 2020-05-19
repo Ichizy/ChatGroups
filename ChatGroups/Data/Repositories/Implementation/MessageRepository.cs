@@ -22,6 +22,8 @@ namespace ChatGroups.Data.Repositories
             await _storage.SaveChangesAsync();
         }
 
+
+
         //TODO: Here should be functionality to modify, mark as deleted message, etc.
     }
 }

@@ -1,4 +1,5 @@
-﻿using ChatGroups.Models;
+﻿using ChatGroups.DTOs;
+using ChatGroups.Models;
 using ChatGroups.Resources;
 using ChatGroups.Services;
 using ChatGroupsContracts;
@@ -11,28 +12,37 @@ using System.Threading.Tasks;
 
 namespace ChatGroups.HubProcessors
 {
-    
     public class GroupsHub : Hub
     {
-        public GroupsHub(GroupsOperationsProcessor processor)
-        {
-            processor.Test();
-        }
-
+        private readonly IGroupsProcessor _processor;
         private static readonly IList<GroupDto> chatGroups = new List<GroupDto>();
 
         //TODO: retrieve from DI
         private readonly AppConfiguration _appConfiguration = new AppConfiguration();
         private const string receiveMethodName = "Receive";
 
+        public GroupsHub(IGroupsProcessor groupsProcessor)
+        {
+            _processor = groupsProcessor;
+        }
+
         /// <summary>
         /// Sends a message to all members of a group.
         /// </summary>
         [HubMethodName("SendToGroup")]
-        public async Task Send(string groupName, string body)
+        public async Task SendToGroup(GroupMessage message)
         {
-            var message = CreateClientMessage(body);
-            await Clients.Group(groupName).SendAsync(receiveMethodName, message);
+            var msgDto = new MessageDto
+            {
+                Body = message.Body,
+                GroupId = message.GroupId,
+                SenderConnectionId = Context.ConnectionId,
+                SentToGroup = true
+            };
+            await _processor.OnMessageSent(msgDto);
+
+            var broadcastMessage = CreateClientMessage(message.Body, message.SenderName);
+            await Clients.Group(message.GroupName).SendAsync(receiveMethodName, broadcastMessage);
         }
 
         /// <summary>
@@ -56,17 +66,20 @@ namespace ChatGroups.HubProcessors
                 await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"Group {groupName} can't be created since it already exists."));
                 return;
             }
-
-            chatGroups.Add(new GroupDto
+            var groupDto = new GroupDto
             {
                 Name = groupName,
                 CurrentClientsAmount = 1,
                 MaximumClientsAmount = _appConfiguration.MaximumGroupSize,
+                CreatorConnectionId = Context.ConnectionId,
                 ClientsConnected = new List<string>
                 {
                     Context.ConnectionId
                 }
-            });
+            };
+            var publicId = await _processor.OnGroupCreation(groupDto);
+            groupDto.PublicId = publicId;
+            chatGroups.Add(groupDto);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
             await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"Group {groupName} successfully created."));
@@ -133,12 +146,24 @@ namespace ChatGroups.HubProcessors
             await Clients.Group(groupName).SendAsync(receiveMethodName, CreateSystemMessage($"{context.Connection.RemoteIpAddress} has left the group."));
         }
 
-        private Message CreateClientMessage(string body)
+        //TODO: consider moving this to OnConnected
+        [HubMethodName("Connect")]
+        public async Task Connect(string clientNickname)
+        {
+            var clientDto = new ClientDto
+            {
+                ConnectionId = Context.ConnectionId,
+                nickname = clientNickname
+            };
+            await _processor.OnClientRegistered(clientDto);
+        }
+
+        private Message CreateClientMessage(string body, string senderName)
         {
             var context = Context.GetHttpContext();
             return new Message
             {
-                Sender = context.Connection.RemoteIpAddress.ToString(),
+                SenderName = senderName,
                 Body = body,
                 Time = DateTime.UtcNow
             };
@@ -149,7 +174,7 @@ namespace ChatGroups.HubProcessors
             var context = Context.GetHttpContext();
             return new Message
             {
-                Sender = "SYSTEM",
+                SenderName = "SYSTEM",
                 Body = body,
                 Time = DateTime.UtcNow
             };

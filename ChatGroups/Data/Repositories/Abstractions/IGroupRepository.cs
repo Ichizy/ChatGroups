@@ -8,5 +8,7 @@ namespace ChatGroups.Data.Repositories
         Task Create(Group group, Client creatorClient);
 
         Task Delete(Group group);
+
+        Task<Group> Get(string publicId);
     }
 }

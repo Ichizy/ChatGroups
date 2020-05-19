@@ -5,7 +5,7 @@ namespace ChatGroupsContracts
     public class Message
     {
         //TODO: think of properties that should be displayed here
-        public string Sender { get; set; }
+        public string SenderName { get; set; }
 
         public string Body { get; set; }
 
@@ -13,7 +13,7 @@ namespace ChatGroupsContracts
 
         public override string ToString()
         {
-            return $"{Time} {Sender}: {Body}";
+            return $"{Time} {SenderName}: {Body}";
         }
     }
 }

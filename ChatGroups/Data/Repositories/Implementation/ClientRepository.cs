@@ -1,4 +1,5 @@
 ﻿using ChatGroups.Data.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
 namespace ChatGroups.Data.Repositories
@@ -21,7 +22,7 @@ namespace ChatGroups.Data.Repositories
 
         public Task<Client> Get(string connectionId)
         {
-            throw new System.NotImplementedException();
+            return _storage.Clients.FirstAsync(x => x.ConnectionId == connectionId);
         }
     }
 }
