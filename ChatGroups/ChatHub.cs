@@ -21,6 +21,7 @@ namespace ChatGroups.HubProcessors
         private readonly IProcessor _processor;
         private readonly AppConfiguration _appConfig;
 
+        //TBD: This collection is redundant for now. It was created before storage appeared, I'd clean it up and use storage and Hub.Groups instead.
         private static IList<GroupDto> chatGroups = new List<GroupDto>();
         private const string receiveMethodName = MessageMethodNames.ReceiveGroupMessage;
 
