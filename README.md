@@ -25,6 +25,8 @@ To signUp you need to provide your nickname, choose whatever your like.
 
 After signUp process you will be able to work with groups. By default a new client is not a member of any group, so please either create a new one or join an existing one. You may also retrieve a list of groups from main menu, so you will be able to pick up ID of a group you would like to join.
 
+![](https://i.ibb.co/RyKmS5d/image.png)
+
 *NOTE: Those IDs are not user-friendly, since it's not defined for now and used for testing purposes. In the future there might be groupIds used like user-tags in games (example: [name]#number) or groups with unique name only, or any other requirement. For now please copy the GUID you get to join the group you would like to*
 ![](https://i.ibb.co/CWhQ5S4/image.png)
 
@@ -38,7 +40,3 @@ You would receive messages in real time from all groups you're a member of. Howe
 * Since Client is created to verify server funcationality, please mind that its' implementation was not my main focus. Program.cs, Processor.cs could be refactored, as well as menu could be done in a more user-friendly way, tests could also be done. 
 
 Hope you find it useful, have fun in chats! :)
-
-
-
-
