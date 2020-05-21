@@ -2,7 +2,6 @@
 using ChatGroups.Data.Repositories;
 using ChatGroups.DTOs;
 using ChatGroups.Models;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -51,6 +50,9 @@ namespace ChatGroups.Services
             }
         }
 
+        /// <summary>
+        /// Triggered by Send Message operation, responsible for processing all side-related operations (managing storage for example).
+        /// </summary>
         public async Task OnMessageSent(MessageDto msgDto)
         {
             try
@@ -74,7 +76,7 @@ namespace ChatGroups.Services
             }
         }
 
-        public async Task<IList<MessageDto>> OnGroupJoin(string groupId, string clientConnectionId)
+        public async Task<GroupMessagesToClientDto> OnGroupJoin(string groupId, string clientConnectionId)
         {
             try
             {
@@ -97,7 +99,24 @@ namespace ChatGroups.Services
                     };
                     history.Add(historyItem);
                 }
-                return history;
+                return new GroupMessagesToClientDto
+                {
+                    Messages = history,
+                    Client = client
+                };
+            }
+            catch (Exception ex)
+            {
+                //TODO: process properly
+                throw ex;
+            }
+        }
+
+        public async Task OnGroupLeave(string clientConnectionId, string groupId)
+        {
+            try
+            {
+                await _groupRepo.LeaveGroup(clientConnectionId, groupId);
             }
             catch (Exception ex)
             {

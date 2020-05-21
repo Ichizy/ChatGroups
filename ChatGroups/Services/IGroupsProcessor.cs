@@ -11,8 +11,11 @@ namespace ChatGroups.Services
 
         Task OnClientRegistered(ClientDto clientDto);
 
+        /// <summary>
+        /// Triggered by Send Message operation, responsible for processing all side-related operations (managing storage for example).
+        /// </summary>
         Task OnMessageSent(MessageDto msgDto);
 
-        Task<IList<MessageDto>> OnGroupJoin(string groupId, string clientConnectionId);
+        Task<GroupMessagesToClientDto> OnGroupJoin(string groupId, string clientConnectionId);
     }
 }

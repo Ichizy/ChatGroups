@@ -9,8 +9,10 @@ namespace ChatGroups.Data.Repositories
 
         Task AddClientToGroup(string publicId, Client client);
 
-        Task Delete(Group group);
+        Task Delete(string publicId);
 
         Task<Group> Get(string publicId);
+
+        Task LeaveGroup(string clientConnectionId, string publicId);
     }
 }

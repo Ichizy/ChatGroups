@@ -47,10 +47,17 @@ namespace ChatGroups.Data.Repositories
             return await _storage.Groups.FirstAsync(x => x.PublicId == publicId);
         }
 
-        //TODO: delete by ID?
-        public async Task Delete(Group group)
+        public async Task Delete(string publicId)
         {
+            var group = await _storage.Groups.FirstAsync(x => x.PublicId == publicId);
             _storage.Groups.Remove(group);
+            await _storage.SaveChangesAsync();
+        }
+
+        public async Task LeaveGroup(string clientConnectionId, string publicId)
+        {
+            var clientGroup = await _storage.ClientGroups.FirstAsync(x => x.Group.PublicId == publicId && x.Client.ConnectionId == clientConnectionId);
+            _storage.ClientGroups.Remove(clientGroup);
             await _storage.SaveChangesAsync();
         }
     }

@@ -2,9 +2,11 @@
 
 namespace ChatGroupsContracts
 {
+    /// <summary>
+    /// Represents basic message sent by client/system.
+    /// </summary>
     public class Message
     {
-        //TODO: think of properties that should be displayed here
         public string SenderName { get; set; }
 
         public string Body { get; set; }

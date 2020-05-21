@@ -28,6 +28,7 @@ namespace ChatGroups
         public void ConfigureServices(IServiceCollection services)
         {
             //TODO: those logs are not working
+            services.AddLogging();
             services.AddApplicationInsightsTelemetry();
             services.AddDbContext<StorageContext>(opt => opt.UseInMemoryDatabase("ChatGroups"));
 
@@ -39,10 +40,9 @@ namespace ChatGroups
 
             services.AddCors();
             services.AddSignalR();
-            //TODO: add proper implementation for appConfig
-            services.Configure<AppConfiguration>(Configuration);
-
-            services.AddLogging();
+            services.AddOptions<AppConfiguration>()
+                            .Bind(Configuration.GetSection(nameof(AppConfiguration)))
+                            .ValidateDataAnnotations();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,7 +53,6 @@ namespace ChatGroups
                 app.UseDeveloperExceptionPage();
             }
 
-            // Make sure the CORS middleware is ahead of SignalR.
             app.UseCors(builder =>
             {
                 builder.AllowAnyOrigin()

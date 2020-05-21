@@ -11,5 +11,15 @@ namespace ChatGroups.Resources
         {
             return $"You've successfully joined {groupName} group. Now you may start chating.";
         }
+
+        public static string SuccessfullyLeftGroup(string groupName)
+        {
+            return $"You've successfully left {groupName} group.";
+        }
+
+        public static string ClientsInGroupLimitReached(string groupName, uint maximumClientsAllowed)
+        {
+            return $"Sorry, you can't join {groupName} since there're already a limit of {maximumClientsAllowed} clients reached.";
+        }
     }
 }
