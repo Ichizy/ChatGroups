@@ -34,7 +34,7 @@ namespace Client
                 .Add("Leave group", () => _processor.LeaveGroup().Wait())
                 .Add("Exit", () => Environment.Exit(0));
             groupsMenu.Display();
-            Output.WriteLine(ConsoleColor.DarkMagenta, "You're now in chatting mode, after sending/receiving message, press Enter to proceed.If you want to call main menu, please press M.");
+            Output.WriteLine(ConsoleColor.Cyan, "You're now in chatting mode, after sending/receiving message, press Enter to proceed.\nIf you want to call main menu, please press M.");
 
 
             var selection = Console.ReadKey();
@@ -44,13 +44,20 @@ namespace Client
                 if (key.Key == ConsoleKey.M)
                     groupsMenu.Display();
                 else
+                {
                     SendMessageToGroup();
+                }
             }
             connection.StopAsync().Wait();
         }
 
         private static void SendMessageToGroup()
         {
+            if (_processor.CurrentGroup == null)
+            {
+                Output.WriteLine(ConsoleColor.Red, "You currently have no group selected. Please create, join or select a group where you would like to chat.\nPress M for entering main menu.");
+                return;
+            }
             string input = Input.ReadString($"{userNickName}:");
             var groupMessage = new GroupMessage
             {

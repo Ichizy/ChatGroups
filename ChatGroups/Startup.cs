@@ -27,10 +27,10 @@ namespace ChatGroups
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            //TBD: For testing purposes InMemory storage was used. 
+            //TBD: Currently EntityFrameworkCore + InMemory storage used. For real project, DB would be used instead
             services.AddDbContext<StorageContext>(opt => opt.UseInMemoryDatabase("ChatGroups"));
 
-            //TBD: I would prefer to use Autofac and extract this to a separate module.
+            //TBD: I would prefer to use Autofac and extract these to a separate module.
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
@@ -43,7 +43,7 @@ namespace ChatGroups
                             .Bind(Configuration.GetSection(nameof(AppConfiguration)))
                             .ValidateDataAnnotations();
 
-            var appConfig = (AppConfiguration)Configuration.GetSection(nameof(AppConfiguration));
+            var appConfig = Configuration.GetSection(nameof(AppConfiguration)).Get<AppConfiguration>();
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo
@@ -78,7 +78,7 @@ namespace ChatGroups
 
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Hello World!");
+                    await context.Response.WriteAsync("Welcome to Next Games!");
                 });
             });
         }

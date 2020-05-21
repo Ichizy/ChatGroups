@@ -119,11 +119,11 @@ namespace ChatGroups.HubProcessors
                 return;
             }
 
-            //if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) != null)
-            //{
-            //    await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.AlreadyAGroupMember(groupName)));
-            //    return;
-            //}
+            if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) != null)
+            {
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.AlreadyAGroupMember(groupName)));
+                return;
+            }
             var groupHistoryToClientDto = await _processor.OnGroupJoin(existingGroup.PublicId, Context.ConnectionId);
 
             existingGroup.ClientsConnected.Add(Context.ConnectionId);

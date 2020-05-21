@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChatGroups.Data.Models
 {
@@ -11,8 +8,14 @@ namespace ChatGroups.Data.Models
         [Key]
         public long Id { get; set; }
 
+        public long ClientId { get; set; }
+
+        [ForeignKey("ClientId")]
         public Client Client { get; set; }
 
+        public long GroupId { get; set; }
+
+        [ForeignKey("GroupId")]
         public Group Group { get; set; }
     }
 }

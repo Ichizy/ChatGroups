@@ -26,6 +26,8 @@ namespace ChatGroups.Data.Repositories
             };
             await _storage.ClientGroups.AddAsync(clientGroup);
             await _storage.SaveChangesAsync();
+
+            var temp = _storage.ClientGroups.FirstOrDefault(x => x.GroupId == group.Id);
         }
 
         public async Task AddClientToGroup(string publicId, Client client)
@@ -55,7 +57,9 @@ namespace ChatGroups.Data.Repositories
 
         public async Task LeaveGroup(string clientConnectionId, string publicId)
         {
-            var clientGroups = await _storage.ClientGroups.Where(x => x.Group.PublicId == publicId).ToListAsync();
+            var clientGroups = await _storage.ClientGroups.Where(x => x.Group.PublicId == publicId)
+                .Include(x => x.Group).Include(x => x.Client)
+                .ToListAsync();
             var clientGroup = clientGroups.First(x => x.Client.ConnectionId == clientConnectionId);
 
             clientGroups.Remove(clientGroup);
