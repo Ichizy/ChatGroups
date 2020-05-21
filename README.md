@@ -44,9 +44,9 @@ You would receive messages in real time from all groups you're a member of. Howe
 
 
 # Developer notes
-* Considerations and code-related notes are marked as corresponding comments (marked as TBD and NOTE). 
-* As an improvement, I'd like to split more the responsibilities of ChatHub, since it looks a bit huge. I'd also love to use Automapper instead of creating new models from existing ones. 
-* I would assume that all client-related functionality (like ClientRepository, models and SignUp method) would be separated from current implementation, since it's not a responsibility for chat groups. Just done for testing purposes.
-* Since Client is created to verify server functionality, please mind that its' implementation was not my main focus. Program.cs, Processor.cs could be refactored, as well as menu could be done in a more user-friendly way, tests could also be done. 
+* Considerations and code-related notes are marked as corresponding comments in source code (marked as TBD and NOTE). 
+* As an improvement, I'd like to split more the responsibilities of *ChatHub*. I'd also love to use Automapper instead of creating new models from existing ones. 
+* I assumed that all client-related functionality (like ClientRepository, models and SignUp method) would be separated from current implementation in real project (since it's not a responsibility for ChatGroups but a separate Auth/User service). It's present here just for comfortable testing.
+* Since *Client* is created to verify server functionality, please mind that its' implementation was not my main focus. Program.cs, Processor.cs could be refactored, as well as menu could be done in a more user-friendly way, tests could be provided. 
 
 Hope you find it useful, have fun in chats! :)
