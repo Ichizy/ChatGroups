@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ChatGroups.Resources
 {
-    //TODO: consider extraction to resource files
+    //TBD: I would consider moving this data into some .txt or any other file.
     public class ErrorMessages
     {
         public static string GroupDoesNotExist(string groupId)

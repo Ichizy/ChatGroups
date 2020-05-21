@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ChatGroups.Resources
 {
+    //TBD: I would consider moving this data into some .txt or any other file.
     public class InformationMessages
     {
         public static string SuccessfullyJoinedGroup(string groupName)
@@ -20,6 +18,11 @@ namespace ChatGroups.Resources
         public static string SuccessfullyLeftGroup(string groupName)
         {
             return $"You've successfully left {groupName} group.";
+        }
+
+        public static string ClientHasLeftGroup(string clientName)
+        {
+            return $"{clientName} has left the group.";
         }
 
         public static string GroupSuccessfullyCreated(string groupName)

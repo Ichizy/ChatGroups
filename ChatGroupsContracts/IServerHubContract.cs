@@ -40,7 +40,7 @@ namespace ChatGroupsContracts
 
         /// This method is an imitation of authentication process. Currently new client is authomatically added once he's connected. In real project, proper auth module should be called separately.
         /// </summary>
-        [HubMethodName(ClientMethodNames.Login)]
-        Task Connect(string clientNickname);
+        [HubMethodName(ClientMethodNames.SignUp)]
+        Task SignUp(string clientNickname);
     }
 }

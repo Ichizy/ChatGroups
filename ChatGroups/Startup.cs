@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using ChatGroups.Data.Repositories;
 using ChatGroups.Services;
-using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace ChatGroups
 {
@@ -27,12 +27,10 @@ namespace ChatGroups
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            //TODO: those logs are not working
-            services.AddLogging();
-            services.AddApplicationInsightsTelemetry();
+            //TBD: For testing purposes InMemory storage was used. 
             services.AddDbContext<StorageContext>(opt => opt.UseInMemoryDatabase("ChatGroups"));
 
-            //TODO: extract this to a separate module (if possible in default DI)
+            //TBD: I would prefer to use Autofac and extract this to a separate module.
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
@@ -40,9 +38,17 @@ namespace ChatGroups
 
             services.AddCors();
             services.AddSignalR();
+
             services.AddOptions<AppConfiguration>()
                             .Bind(Configuration.GetSection(nameof(AppConfiguration)))
                             .ValidateDataAnnotations();
+
+            var appConfig = (AppConfiguration)Configuration.GetSection(nameof(AppConfiguration));
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo
+                .ApplicationInsights(appConfig.InstrumentationKey, TelemetryConverter.Events)
+                .CreateLogger();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

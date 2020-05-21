@@ -12,6 +12,8 @@ namespace Client
         private static HubConnection connection;
         private static string userNickName;
         private static Processor _processor;
+        // private const string connectionUrl = "http://chatgroups.azurewebsites.net/chat";
+        private const string connectionUrl = "http://localhost:55933/chat";
 
         public static void Main(string[] args)
         {
@@ -20,11 +22,9 @@ namespace Client
             userNickName = Input.ReadString("Welcome! Let's imitate authentication process ;) Please enter your nickname:");
             Output.WriteLine($"Hey {userNickName}, welcome to our messenger!");
 
-            connection.StartAsync().Wait(); //TODO: this should be extracted later
-            connection.InvokeAsync(ClientMethodNames.Login, userNickName).Wait();
-
+            connection.StartAsync().Wait();
+            connection.InvokeAsync(ClientMethodNames.SignUp, userNickName).Wait();
             _processor = new Processor(ref connection);
-
 
             var groupsMenu = new Menu()
                 .Add("Create new group", () => _processor.CreateGroup().Wait())
@@ -42,13 +42,9 @@ namespace Client
             {
                 var key = Console.ReadKey();
                 if (key.Key == ConsoleKey.M)
-                {
                     groupsMenu.Display();
-                }
                 else
-                {
                     SendMessageToGroup();
-                }
             }
             connection.StopAsync().Wait();
         }
@@ -70,11 +66,10 @@ namespace Client
         private static void ConfigureHub()
         {
             connection = new HubConnectionBuilder()
-                   //.WithUrl("http://chatgroups.azurewebsites.net/chat")
-                   .WithUrl("http://localhost:55933/chat")
+                   .WithUrl(connectionUrl)
                    .Build();
 
-            connection.On(MessageMethodNames.Receive, (GroupMessage message) =>
+            connection.On(MessageMethodNames.ReceiveGroupMessage, (GroupMessage message) =>
             {
                 Output.WriteLine(ConsoleColor.Yellow, message.ToString());
             });

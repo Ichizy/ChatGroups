@@ -7,7 +7,6 @@ using ChatGroupsContracts;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,7 +22,7 @@ namespace ChatGroups.HubProcessors
         private readonly AppConfiguration _appConfig;
 
         private static IList<GroupDto> chatGroups = new List<GroupDto>();
-        private const string receiveMethodName = MessageMethodNames.Receive;
+        private const string receiveMethodName = MessageMethodNames.ReceiveGroupMessage;
 
         public ChatHub(IProcessor groupsProcessor, IOptions<AppConfiguration> options)
         {
@@ -156,31 +155,29 @@ namespace ChatGroups.HubProcessors
             }
 
             existingGroup.ClientsConnected.Remove(Context.ConnectionId);
-            await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyLeftGroup(existingGroup.Name)));
-
-            //TODO: remove in DB as well
             if (existingGroup.ClientsConnected.Count == 0)
-            {
-                //TODO: remove the group here
-            }
+                chatGroups.Remove(existingGroup);
 
-            var context = Context.GetHttpContext();
+            var clientName = await _processor.OnGroupLeave(groupId, Context.ConnectionId);
+
+            await Clients.Caller
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyLeftGroup(existingGroup.Name)));
             await Clients.Group(existingGroup.Name)
-                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage($"{context.Connection.RemoteIpAddress} has left the group."));
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasLeftGroup(clientName)));
         }
 
         /// <summary>
-        /// This method is an imitation of authentication process. Currently new client is authomatically added once he's connected. In real project, proper auth module should be called separately.
+        /// This method is an imitation of sign up process. Currently new client is authomatically added once he's connected. In real project, proper auth module should be called separately.
         /// </summary>
-        [HubMethodName(ClientMethodNames.Login)]
-        public async Task Connect(string clientNickname)
+        [HubMethodName(ClientMethodNames.SignUp)]
+        public async Task SignUp(string clientNickname)
         {
             var clientDto = new ClientDto
             {
                 ConnectionId = Context.ConnectionId,
-                nickname = clientNickname
+                Nickname = clientNickname
             };
-            await _processor.OnClientRegistered(clientDto);
+            await _processor.OnSignUp(clientDto);
         }
     }
 }

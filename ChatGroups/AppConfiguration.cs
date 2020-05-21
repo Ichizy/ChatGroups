@@ -12,5 +12,10 @@ namespace ChatGroups
         /// The maximum amount of clients available per chat group.
         /// </summary>
         public uint MaximumGroupSize { get; set; }
+
+        /// <summary>
+        /// Key used for writing logs.
+        /// </summary>
+        public string InstrumentationKey { get; set; }
     }
 }

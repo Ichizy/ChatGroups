@@ -68,8 +68,11 @@ namespace Client
             }
             var groupId = UserGroups[input].GroupId;
             UserGroups.Remove(UserGroups[input]);
-            //TODO: check for current group to be not the one to be leaving
-
+            if (CurrentGroup.GroupId == groupId)
+            {
+                CurrentGroup = null;
+                Output.WriteLine(ConsoleColor.Red, "You've left your current group, please select a new one in main menu (press M), so you could chat in another group.");
+            }
             await _connection.InvokeAsync(GroupMethodNames.LeaveGroup, groupId);
         }
 
@@ -78,7 +81,6 @@ namespace Client
             UserGroups.Add(group);
             CurrentGroup = group;
             Output.WriteLine(ConsoleColor.Green, $"You're now chatting in {group.GroupName} group.");
-            //TODO: show here message history? 
         }
     }
 }

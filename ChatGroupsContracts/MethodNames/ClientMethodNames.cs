@@ -6,6 +6,6 @@ namespace ChatGroupsContracts
 {
     public class ClientMethodNames
     {
-        public const string Login = "Login";
+        public const string SignUp = "SignUp";
     }
 }

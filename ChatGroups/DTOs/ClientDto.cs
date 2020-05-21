@@ -7,7 +7,7 @@ namespace ChatGroups.DTOs
 {
     public class ClientDto
     {
-        public string nickname { get; set; }
+        public string Nickname { get; set; }
 
         public string ConnectionId { get; set; }
     }

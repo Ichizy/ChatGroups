@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ChatGroupsContracts.Models;
+using Microsoft.AspNetCore.SignalR;
+using System;
 
 namespace ChatGroupsContracts
 {
@@ -7,10 +9,22 @@ namespace ChatGroupsContracts
     /// </summary>
     public interface IClientHubContract
     {
+        /// <summary>
+        /// Receive a message sent to a group.
+        /// </summary>
+        [HubMethodName(MessageMethodNames.ReceiveGroupMessage)]
+        Action ReceiveMessage(GroupMessage message);
 
-        void ReceiveMessage();
+        /// <summary>
+        /// Receive message history for a group. Triggered once client joins a new group.
+        /// </summary>
+        [HubMethodName(MessageMethodNames.ReceiveMessageHistory)]
+        Action ReceiveGroupHistory(GroupMessageHistory history);
 
-
-        //TODO: add all required methods here
+        /// <summary>
+        /// Contains information about group, which client has just joined.
+        /// </summary>
+        [HubMethodName(GroupMethodNames.OnGroupJoined)]
+        Action OnGroupJoined(GroupMessage message);
     }
 }

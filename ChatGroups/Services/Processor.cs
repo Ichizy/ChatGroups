@@ -2,13 +2,13 @@
 using ChatGroups.Data.Repositories;
 using ChatGroups.DTOs;
 using ChatGroups.Models;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ChatGroups.Services
 {
-    //TODO: add logging support
     public class Processor : IProcessor
     {
         private readonly IGroupRepository _groupRepo;
@@ -22,14 +22,23 @@ namespace ChatGroups.Services
             _messageRepo = messageRepo;
         }
 
-        public async Task OnClientRegistered(ClientDto clientDto)
+        public async Task OnSignUp(ClientDto clientDto)
         {
-            var client = new Client
+            try
             {
-                ConnectionId = clientDto.ConnectionId,
-                PublicName = clientDto.nickname
-            };
-            await _clientRepo.Add(client);
+                Log.Information("Starting SignUp: {@clientDto}", clientDto);
+                var client = new Client
+                {
+                    ConnectionId = clientDto.ConnectionId,
+                    PublicName = clientDto.Nickname
+                };
+                await _clientRepo.Add(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "OnSignUp failed for {@clientDto}", clientDto);
+                throw ex;
+            }
         }
 
         public async Task<string> OnGroupCreation(GroupDto groupDto)
@@ -44,14 +53,11 @@ namespace ChatGroups.Services
             }
             catch (Exception ex)
             {
-                //TODO: process properly
+                Log.Error(ex, "OnGroupCreation failed for {@groupDto}", groupDto);
                 throw ex;
             }
         }
 
-        /// <summary>
-        /// Triggered by Send Message operation, responsible for processing all side-related operations (managing storage for example).
-        /// </summary>
         public async Task OnMessageSent(MessageDto msgDto)
         {
             try
@@ -71,7 +77,7 @@ namespace ChatGroups.Services
             }
             catch (Exception ex)
             {
-                //TODO: process properly
+                Log.Error(ex, "OnMessageSent failed for {@msgDto}", msgDto);
                 throw ex;
             }
         }
@@ -107,20 +113,26 @@ namespace ChatGroups.Services
             }
             catch (Exception ex)
             {
-                //TODO: process properly
+                Log.Error(ex, $"OnGroupJoin failed for client: {clientConnectionId}, group: {groupId}");
                 throw ex;
             }
         }
 
-        public async Task OnGroupLeave(string clientConnectionId, string groupId)
+        /// <summary>
+        /// Cleans up client-group relations, drops the group if no one left in there.
+        /// </summary>
+        /// <returns>Client public name.</returns>
+        public async Task<string> OnGroupLeave(string groupId, string clientConnectionId)
         {
             try
             {
                 await _groupRepo.LeaveGroup(clientConnectionId, groupId);
+                var client = await _clientRepo.Get(clientConnectionId);
+                return client.PublicName;
             }
             catch (Exception ex)
             {
-                //TODO: process properly
+                Log.Error(ex, $"OnGroupLeave failed for client: {clientConnectionId}, group: {groupId}");
                 throw ex;
             }
         }
