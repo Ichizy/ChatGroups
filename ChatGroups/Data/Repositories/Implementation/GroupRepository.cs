@@ -37,6 +37,8 @@ namespace ChatGroups.Data.Repositories
             var clientGroup = new ClientGroup
             {
                 Client = client,
+                ClientId = client.Id,
+                GroupId = group.Id,
                 Group = group
             };
             await _storage.ClientGroups.AddAsync(clientGroup);

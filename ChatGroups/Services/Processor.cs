@@ -73,11 +73,16 @@ namespace ChatGroups.Services
                 {
                     Body = msgDto.Body,
                     Client = client,
+                    ClientId = client.Id,
                     Time = msgDto.Time
                 };
 
                 if (msgDto.SentToGroup)
-                    msg.Group = await _groupRepo.Get(msgDto.GroupId);
+                {
+                    var group = await _groupRepo.Get(msgDto.GroupId);
+                    msg.GroupId = group.Id;
+                    msg.Group = group;
+                }
 
                 await _messageRepo.Add(msg);
             }
@@ -97,10 +102,9 @@ namespace ChatGroups.Services
             {
                 var client = await _clientRepo.Get(clientConnectionId);
                 await _groupRepo.AddClientToGroup(groupId, client);
-
                 var historyModel = await _messageRepo.GetGroupHistory(groupId);
-                var history = new List<MessageDto>();
 
+                var history = new List<MessageDto>();
                 foreach (var item in historyModel)
                 {
                     var historyItem = new MessageDto

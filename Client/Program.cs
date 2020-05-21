@@ -12,8 +12,8 @@ namespace Client
         private static HubConnection connection;
         private static string userNickName;
         private static Processor _processor;
-        // private const string connectionUrl = "http://chatgroups.azurewebsites.net/chat";
-        private const string connectionUrl = "http://localhost:55933/chat";
+        private const string connectionUrl = "http://chatgroups.azurewebsites.net/chat";
+        //private const string connectionUrl = "http://localhost:55933/chat";
 
         public static void Main(string[] args)
         {

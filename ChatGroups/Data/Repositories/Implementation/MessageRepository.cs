@@ -1,5 +1,6 @@
 ﻿using ChatGroups.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,8 +25,10 @@ namespace ChatGroups.Data.Repositories
 
         public async Task<IList<Message>> GetGroupHistory(string groupId)
         {
-            var result = _storage.Messages.Where(x => x.Group.PublicId == groupId);
-            return await result.ToListAsync();
+            var result = _storage.Messages.Where(x => x.Group.PublicId == groupId)
+                .Include(x => x.Group).Include(x => x.Client)
+                .ToListAsync();
+            return await result;
         }
     }
 }

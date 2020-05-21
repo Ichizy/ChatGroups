@@ -126,13 +126,21 @@ namespace ChatGroups.HubProcessors
             }
             var groupHistoryToClientDto = await _processor.OnGroupJoin(existingGroup.PublicId, Context.ConnectionId);
 
+            var groupMessage = new GroupMessage
+            {
+                GroupName = groupName,
+                GroupId = existingGroup.PublicId
+            };
             existingGroup.ClientsConnected.Add(Context.ConnectionId);
-            await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName)));
-            await Clients.Caller.SendAsync(GroupMethodNames.ReceiveGroupHistory, MessageConstructor.GroupMessageHistory(groupHistoryToClientDto));
-
             var exclutionList = new List<string> { Context.ConnectionId };
-            await Clients.GroupExcept(groupName, exclutionList)
-                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasJoinedGroup(groupHistoryToClientDto.Client.PublicName)));
+
+            Task.WaitAll(
+            Groups.AddToGroupAsync(Context.ConnectionId, groupName),
+            Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName))),
+            Clients.Caller.SendAsync(GroupMethodNames.OnGroupJoined, groupMessage),
+            Clients.Caller.SendAsync(GroupMethodNames.ReceiveGroupHistory, MessageConstructor.GroupMessageHistory(groupHistoryToClientDto)),
+            Clients.GroupExcept(groupName, exclutionList)
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasJoinedGroup(groupHistoryToClientDto.Client.PublicName))));
         }
 
         /// <summary>
@@ -160,10 +168,12 @@ namespace ChatGroups.HubProcessors
 
             var clientName = await _processor.OnGroupLeave(groupId, Context.ConnectionId);
 
-            await Clients.Caller
-                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyLeftGroup(existingGroup.Name)));
-            await Clients.Group(existingGroup.Name)
-                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasLeftGroup(clientName)));
+            Task.WaitAll(
+            Groups.RemoveFromGroupAsync(Context.ConnectionId, existingGroup.Name),
+            Clients.Caller
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyLeftGroup(existingGroup.Name))),
+            Clients.Group(existingGroup.Name)
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasLeftGroup(clientName))));
         }
 
         /// <summary>
