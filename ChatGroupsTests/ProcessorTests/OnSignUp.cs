@@ -1,14 +1,14 @@
-﻿using ChatGroups.Services;
-using Moq;
+﻿using ChatGroups.Data.Models;
 using ChatGroups.Data.Repositories;
+using ChatGroups.Services;
+using Moq;
 using NUnit.Framework;
-using ChatGroups.Data.Models;
+using System;
 using System.Threading.Tasks;
-using ChatGroups.DTOs;
 
-namespace ChatGroupsTests
+namespace ChatGroupsTests.ProcessorTests
 {
-    internal class GroupsProcessorTests
+    public class OnSignUp
     {
         private Processor _processor;
         private Mock<IClientRepository> _clientRepoMock;
@@ -23,22 +23,32 @@ namespace ChatGroupsTests
 
             _groupRepoMock = new Mock<IGroupRepository>();
             _messageRepoMock = new Mock<IMessageRepository>();
-            //TODO: setup mocks
 
             _processor = new Processor(_groupRepoMock.Object, _clientRepoMock.Object, _messageRepoMock.Object);
         }
 
         [Test]
-        public async Task Login_ValidClientInfo_ClientCreatedInStorage()
+        public async Task OnSignUp_ValidClientInfo_ClientCreatedInStorage()
         {
-            var clientDto = new ClientDto
-            {
-                ConnectionId = "1234",
-                Nickname = "bestMageEu"
-            };
+            var clientDto = DummyModels.ClientDto();
             await _processor.OnSignUp(clientDto);
 
             _clientRepoMock.Verify(x => x.Add(It.Is<Client>(x => x.ConnectionId == clientDto.ConnectionId)), Times.Once);
+        }
+
+        [Test]
+        public void OnSignUp_NullArgumentPassed_ArgumentNullExceptionThrown()
+        {
+            Assert.ThrowsAsync<ArgumentNullException>(() => _processor.OnSignUp(null));
+        }
+
+        [Test]
+        public void OnSignUp_ErrorInstorage_ErrorThrown()
+        {
+            _clientRepoMock.Setup(x => x.Add(It.IsAny<Client>())).ThrowsAsync(new Exception());
+
+            var clientDto = DummyModels.ClientDto();
+            Assert.ThrowsAsync<Exception>(() => _processor.OnSignUp(clientDto));
         }
     }
 }

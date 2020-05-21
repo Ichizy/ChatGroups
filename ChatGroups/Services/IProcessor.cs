@@ -21,6 +21,6 @@ namespace ChatGroups.Services
         /// Cleans up client-group relations, drops the group if no one left in there.
         /// </summary>
         /// <returns>Client public name.</returns>
-        Task<string> OnGroupLeave(string groupId, string clientConnectionId)
+        Task<string> OnGroupLeave(string groupId, string clientConnectionId);
     }
 }

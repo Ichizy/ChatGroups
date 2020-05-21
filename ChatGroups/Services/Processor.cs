@@ -2,6 +2,7 @@
 using ChatGroups.Data.Repositories;
 using ChatGroups.DTOs;
 using ChatGroups.Models;
+using ChatGroups.Util;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,8 @@ namespace ChatGroups.Services
 
         public async Task OnSignUp(ClientDto clientDto)
         {
+            Ensure.NotNull(nameof(clientDto), clientDto);
+
             try
             {
                 Log.Information("Starting SignUp: {@clientDto}", clientDto);
@@ -43,10 +46,11 @@ namespace ChatGroups.Services
 
         public async Task<string> OnGroupCreation(GroupDto groupDto)
         {
+            Ensure.NotNull(nameof(groupDto), groupDto);
+
             try
             {
                 var client = await _clientRepo.Get(groupDto.CreatorConnectionId);
-
                 var group = new Group(groupDto.Name);
                 await _groupRepo.Create(group, client);
                 return group.PublicId;
@@ -60,6 +64,8 @@ namespace ChatGroups.Services
 
         public async Task OnMessageSent(MessageDto msgDto)
         {
+            Ensure.NotNull(nameof(msgDto), msgDto);
+
             try
             {
                 var client = await _clientRepo.Get(msgDto.SenderConnectionId);
@@ -84,6 +90,9 @@ namespace ChatGroups.Services
 
         public async Task<GroupMessagesToClientDto> OnGroupJoin(string groupId, string clientConnectionId)
         {
+            Ensure.NotNull(nameof(groupId), groupId);
+            Ensure.NotNull(nameof(clientConnectionId), clientConnectionId);
+
             try
             {
                 var client = await _clientRepo.Get(clientConnectionId);
@@ -124,6 +133,9 @@ namespace ChatGroups.Services
         /// <returns>Client public name.</returns>
         public async Task<string> OnGroupLeave(string groupId, string clientConnectionId)
         {
+            Ensure.NotNull(nameof(groupId), groupId);
+            Ensure.NotNull(nameof(clientConnectionId), clientConnectionId);
+
             try
             {
                 await _groupRepo.LeaveGroup(clientConnectionId, groupId);
