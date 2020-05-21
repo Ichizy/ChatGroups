@@ -10,5 +10,10 @@ namespace ChatGroupsContracts
         public string GroupName { get; set; }
 
         public string GroupId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{GroupName} {Time} {SenderName}: {Body}";
+        }
     }
 }

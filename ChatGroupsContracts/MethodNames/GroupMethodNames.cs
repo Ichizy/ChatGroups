@@ -9,6 +9,7 @@ namespace ChatGroupsContracts
         public const string ListGroups = "ListGroups";
         public const string SendToGroup = "SendToGroup";
         public const string LeaveGroup = "LeaveGroup";
+        public const string ReceiveGroupHistory = "ReceiveGroupHistory";
 
         public const string OnGroupJoined = "OnGroupJoined";
     }

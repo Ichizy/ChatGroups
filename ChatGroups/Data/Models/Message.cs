@@ -17,6 +17,6 @@ namespace ChatGroups.Data.Models
         /// <summary>
         /// Message can belong to a group, however it might be also possible to send a message just to another user (so group would be empty).
         /// </summary>
-        public Group? Group { get; set; }
+        public Group Group { get; set; }
     }
 }

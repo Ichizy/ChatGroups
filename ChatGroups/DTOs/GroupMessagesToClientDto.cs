@@ -11,5 +11,11 @@ namespace ChatGroups.DTOs
         public IList<MessageDto> Messages { get; set; }
 
         public Client Client { get; set; }
+
+        public string GroupId { get; set; }
+
+        public string GroupName { get; set; }
+
+        public bool SentToGroup { get; set; }
     }
 }

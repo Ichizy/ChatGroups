@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Client
 {
-    public class GroupsProcessor
+    public class Processor
     {
         private readonly HubConnection _connection;
         public List<UserGroup> UserGroups;
         public UserGroup CurrentGroup;
 
-        public GroupsProcessor(ref HubConnection connection)
+        public Processor(ref HubConnection connection)
         {
             _connection = connection;
             UserGroups = new List<UserGroup>();
@@ -47,9 +47,30 @@ namespace Client
 
         public async Task JoinGroup()
         {
-            Console.WriteLine("Enter group name:");
-            var groupName = Console.ReadLine();
-            await _connection.InvokeAsync(GroupMethodNames.JoinGroup, groupName);
+            Console.WriteLine("Enter group ID:");
+            var groupId = Console.ReadLine();
+            await _connection.InvokeAsync(GroupMethodNames.JoinGroup, groupId);
+        }
+
+        public async Task LeaveGroup()
+        {
+            Console.WriteLine("Select a group to leave from list of your groups:");
+            for (int i = 0; i < UserGroups.Count; i++)
+            {
+                Console.WriteLine($"{i}. {UserGroups[i].GroupName}");
+                //TBD: Since it's console application for testing purposes, let's leave only name here. For real usage there could be message history or identifier, depends on business requirements.
+            }
+            int input = Input.ReadInt();
+            if (input < 0 || input > UserGroups.Count)
+            {
+                Output.WriteLine(ConsoleColor.Red, "Invalid group number provided.");
+                return;
+            }
+            var groupId = UserGroups[input].GroupId;
+            UserGroups.Remove(UserGroups[input]);
+            //TODO: check for current group to be not the one to be leaving
+
+            await _connection.InvokeAsync(GroupMethodNames.LeaveGroup, groupId);
         }
 
         public void OnGroupJoined(UserGroup group)

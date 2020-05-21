@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ChatGroups.Services
 {
-    public interface IGroupsProcessor
+    public interface IProcessor
     {
         Task<string> OnGroupCreation(GroupDto groupDto);
 

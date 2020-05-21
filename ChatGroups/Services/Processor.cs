@@ -9,14 +9,13 @@ using System.Threading.Tasks;
 namespace ChatGroups.Services
 {
     //TODO: add logging support
-    //TODO: split the responsibilities or rename service (depends on further extentions?)
-    public class GroupsProcessor : IGroupsProcessor
+    public class Processor : IProcessor
     {
         private readonly IGroupRepository _groupRepo;
         private readonly IClientRepository _clientRepo;
         private readonly IMessageRepository _messageRepo;
 
-        public GroupsProcessor(IGroupRepository groupRepo, IClientRepository clientRepo, IMessageRepository messageRepo)
+        public Processor(IGroupRepository groupRepo, IClientRepository clientRepo, IMessageRepository messageRepo)
         {
             _groupRepo = groupRepo;
             _clientRepo = clientRepo;
@@ -61,7 +60,8 @@ namespace ChatGroups.Services
                 var msg = new Message
                 {
                     Body = msgDto.Body,
-                    Client = client
+                    Client = client,
+                    Time = msgDto.Time
                 };
 
                 if (msgDto.SentToGroup)
@@ -86,13 +86,13 @@ namespace ChatGroups.Services
                 var historyModel = await _messageRepo.GetGroupHistory(groupId);
                 var history = new List<MessageDto>();
 
-                //TODO: automapper?
                 foreach (var item in historyModel)
                 {
                     var historyItem = new MessageDto
                     {
                         GroupId = item.Group.PublicId,
                         Body = item.Body,
+                        SenderName = item.Client.PublicName,
                         SenderConnectionId = item.Client.ConnectionId,
                         SentToGroup = true,
                         Time = item.Time

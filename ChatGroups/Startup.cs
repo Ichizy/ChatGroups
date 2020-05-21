@@ -36,7 +36,7 @@ namespace ChatGroups
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
-            services.AddScoped<IGroupsProcessor, GroupsProcessor>();
+            services.AddScoped<IProcessor, Processor>();
 
             services.AddCors();
             services.AddSignalR();
@@ -63,7 +63,7 @@ namespace ChatGroups
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<GroupsHub>("/chat",
+                endpoints.MapHub<ChatHub>("/chat",
                     options =>
                     {
                         options.Transports = HttpTransportType.WebSockets;

@@ -11,6 +11,8 @@ namespace ChatGroups.DTOs
 
         public string SenderConnectionId { get; set; }
 
+        public string SenderName { get; set; }
+
         public string GroupId { get; set; }
 
         public bool SentToGroup { get; set; }

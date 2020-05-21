@@ -2,6 +2,7 @@
 using ChatGroups.Models;
 using ChatGroups.Resources;
 using ChatGroups.Services;
+using ChatGroups.Util;
 using ChatGroupsContracts;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
@@ -13,15 +14,18 @@ using System.Threading.Tasks;
 
 namespace ChatGroups.HubProcessors
 {
-    public class GroupsHub : Hub
+    /// <summary>
+    /// Communnication hub, entry point for processing requests from clients. 
+    /// </summary>
+    public class ChatHub : Hub, IServerHubContract
     {
-        private readonly IGroupsProcessor _processor;
+        private readonly IProcessor _processor;
         private readonly AppConfiguration _appConfig;
 
         private static IList<GroupDto> chatGroups = new List<GroupDto>();
         private const string receiveMethodName = MessageMethodNames.Receive;
 
-        public GroupsHub(IGroupsProcessor groupsProcessor, IOptions<AppConfiguration> options)
+        public ChatHub(IProcessor groupsProcessor, IOptions<AppConfiguration> options)
         {
             _processor = groupsProcessor;
             _appConfig = options.Value;
@@ -39,12 +43,10 @@ namespace ChatGroups.HubProcessors
                 GroupId = message.GroupId,
                 SenderConnectionId = Context.ConnectionId,
                 SentToGroup = true,
-                Time = DateTime.UtcNow //TODO: ensure time
+                Time = message.Time
             };
             await _processor.OnMessageSent(msgDto);
-
-            var broadcastMessage = CreateClientMessage(message.Body, message.SenderName);
-            await Clients.Group(message.GroupName).SendAsync(receiveMethodName, broadcastMessage);
+            await Clients.Group(message.GroupName).SendAsync(receiveMethodName, message);
         }
 
         /// <summary>
@@ -54,7 +56,7 @@ namespace ChatGroups.HubProcessors
         public async Task List()
         {
             var body = JsonConvert.SerializeObject(chatGroups);
-            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(body));
+            await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(body));
         }
 
         /// <summary>
@@ -65,7 +67,7 @@ namespace ChatGroups.HubProcessors
         {
             if (chatGroups.FirstOrDefault(x => x.Name == groupName) != null)
             {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(ErrorMessages.GroupAlreadyExists(groupName)));
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.GroupAlreadyExists(groupName)));
                 return;
             }
             var groupDto = new GroupDto
@@ -84,12 +86,14 @@ namespace ChatGroups.HubProcessors
             chatGroups.Add(groupDto);
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-            var message = CreateSystemMessage($"Group {groupName} successfully created.");
+            var message = MessageConstructor.SystemMessage(InformationMessages.GroupSuccessfullyCreated(groupName));
             var groupMessage = new GroupMessage
             {
                 GroupName = groupName,
-                GroupId = groupDto.PublicId
-                //TODO: construct from basic message?
+                GroupId = groupDto.PublicId,
+                Body = message.Body,
+                SenderName = message.SenderName,
+                Time = message.Time
             };
 
             await Clients.Caller.SendAsync(receiveMethodName, message);
@@ -100,60 +104,59 @@ namespace ChatGroups.HubProcessors
         /// Allows a client to join an existing group.
         /// </summary>
         [HubMethodName(GroupMethodNames.JoinGroup)]
-        public async Task Join(string groupName)
+        public async Task Join(string groupId)
         {
-            var existingGroup = chatGroups.FirstOrDefault(x => x.Name == groupName);
+            var existingGroup = chatGroups.FirstOrDefault(x => x.PublicId == groupId);
             if (existingGroup == null)
             {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(ErrorMessages.GroupDoesNotExist(groupName)));
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.GroupDoesNotExist(groupId)));
                 return;
             }
 
+            var groupName = existingGroup.Name;
             if (existingGroup.CurrentClientsAmount == existingGroup.MaximumClientsAmount)
             {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(InformationMessages.ClientsInGroupLimitReached(groupName, _appConfig.MaximumGroupSize)));
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientsInGroupLimitReached(groupName, _appConfig.MaximumGroupSize)));
                 return;
             }
 
-            //TODO: return, commented for testing now.
             //if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) != null)
             //{
-            //    await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage($"You're already a member of {groupName} group."));
+            //    await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.AlreadyAGroupMember(groupName)));
             //    return;
             //}
             var groupHistoryToClientDto = await _processor.OnGroupJoin(existingGroup.PublicId, Context.ConnectionId);
 
-            //TODO: update default collection
             existingGroup.ClientsConnected.Add(Context.ConnectionId);
-            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName)));
-            //TODO: return history here;
+            await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyJoinedGroup(groupName)));
+            await Clients.Caller.SendAsync(GroupMethodNames.ReceiveGroupHistory, MessageConstructor.GroupMessageHistory(groupHistoryToClientDto));
 
-            var context = Context.GetHttpContext();
             var exclutionList = new List<string> { Context.ConnectionId };
-            await Clients.GroupExcept(groupName, exclutionList).SendAsync(receiveMethodName, CreateSystemMessage($"{groupHistoryToClientDto.Client.PublicName} has joined group."));
+            await Clients.GroupExcept(groupName, exclutionList)
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.ClientHasJoinedGroup(groupHistoryToClientDto.Client.PublicName)));
         }
 
         /// <summary>
         /// Allows a client to leave a group.
         /// </summary>
         [HubMethodName(GroupMethodNames.LeaveGroup)]
-        public async Task Leave(string groupName)
+        public async Task Leave(string groupId)
         {
-            var existingGroup = chatGroups.FirstOrDefault(x => x.Name == groupName);
+            var existingGroup = chatGroups.FirstOrDefault(x => x.PublicId == groupId);
             if (existingGroup == null)
             {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(ErrorMessages.GroupDoesNotExist(groupName)));
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.GroupDoesNotExist(groupId)));
                 return;
             }
 
             if (existingGroup.ClientsConnected.FirstOrDefault(x => x == Context.ConnectionId) == null)
             {
-                await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(ErrorMessages.NotAGroupMember(groupName)));
+                await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(ErrorMessages.NotAGroupMember(existingGroup.Name)));
                 return;
             }
 
             existingGroup.ClientsConnected.Remove(Context.ConnectionId);
-            await Clients.Caller.SendAsync(receiveMethodName, CreateSystemMessage(InformationMessages.SuccessfullyLeftGroup(groupName)));
+            await Clients.Caller.SendAsync(receiveMethodName, MessageConstructor.SystemMessage(InformationMessages.SuccessfullyLeftGroup(existingGroup.Name)));
 
             //TODO: remove in DB as well
             if (existingGroup.ClientsConnected.Count == 0)
@@ -162,11 +165,14 @@ namespace ChatGroups.HubProcessors
             }
 
             var context = Context.GetHttpContext();
-            await Clients.Group(groupName).SendAsync(receiveMethodName, CreateSystemMessage($"{context.Connection.RemoteIpAddress} has left the group."));
+            await Clients.Group(existingGroup.Name)
+                .SendAsync(receiveMethodName, MessageConstructor.SystemMessage($"{context.Connection.RemoteIpAddress} has left the group."));
         }
 
-        //TODO: consider moving this to OnConnected
-        [HubMethodName("Connect")]
+        /// <summary>
+        /// This method is an imitation of authentication process. Currently new client is authomatically added once he's connected. In real project, proper auth module should be called separately.
+        /// </summary>
+        [HubMethodName(ClientMethodNames.Login)]
         public async Task Connect(string clientNickname)
         {
             var clientDto = new ClientDto
@@ -175,28 +181,6 @@ namespace ChatGroups.HubProcessors
                 nickname = clientNickname
             };
             await _processor.OnClientRegistered(clientDto);
-        }
-
-        private Message CreateClientMessage(string body, string senderName)
-        {
-            var context = Context.GetHttpContext();
-            return new Message
-            {
-                SenderName = senderName,
-                Body = body,
-                Time = DateTime.UtcNow
-            };
-        }
-
-        private Message CreateSystemMessage(string body)
-        {
-            var context = Context.GetHttpContext();
-            return new Message
-            {
-                SenderName = "SYSTEM",
-                Body = body,
-                Time = DateTime.UtcNow
-            };
         }
     }
 }
